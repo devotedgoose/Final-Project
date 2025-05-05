@@ -11,124 +11,153 @@ Developed using Python's Tkinter library with a modular and secure approach.
 """
 
 import tkinter as tk
-from tkinter import messagebox, ttk
-from datetime import datetime
+from tkinter import messagebox
+from PIL import Image, ImageTk
 
-# Store tickets in a list of dictionaries
-tickets = []
 
-# Function: Exit the application
-def exit_app():
-    root.quit()
+# Storage for tickets
+tickets = []  # Initially empty
 
-# Function: Validate and create a new ticket
-def submit_ticket():
-    name = name_entry.get().strip()
-    phone = phone_entry.get().strip()
-    device = device_entry.get().strip()
-    problem = problem_entry.get("1.0", tk.END).strip()
-    serial = serial_entry.get().strip()
-    date_created = datetime.now().strftime("%m/%d/%Y")
+# ====== Module: Main Window (Home) ======
+def show_main_window():
+    home = tk.Tk()
+    home.title("G-TECH Repair Ticket Service")
+    home.geometry("500x300")
+    home.resizable(False, False)
 
-    # Input validation
-    if not name or not phone.isdigit() or len(phone) != 10 or not device or not problem or not serial:
-        messagebox.showerror("Input Error", "Please ensure all fields are valid.")
-        return
+    # Load images
+    try:
+        logo_img = tk.PhotoImage(file="logo.png")  # Company logo
+        icon_img = tk.PhotoImage(file="repair_icon.png")  # Repair icon
+    except Exception as e:
+        messagebox.showerror("Image Load Error", f"Could not load image: {e}")
+        logo_img = icon_img = None
 
-    ticket_id = len(tickets) + 1
-    ticket = {
-        "ID": ticket_id,
-        "Name": name,
-        "Phone": phone,
-        "Device": device,
-        "Serial": serial,
-        "Problem": problem,
-        "Date": date_created,
-        "Status": "Open"
-    }
-    tickets.append(ticket)
-    messagebox.showinfo("Success", f"Ticket #{ticket_id} created successfully.")
-    clear_fields()
-    update_ticket_list()
+    # Display logo image with alt text
+    if logo_img:
+        logo_label = tk.Label(home, image=logo_img, text="G-TECH Logo", compound="top")
+        logo_label.image = logo_img  # Keep a reference
+        logo_label.pack(pady=10)
 
-# Function: Clear input fields
-def clear_fields():
-    name_entry.delete(0, tk.END)
-    phone_entry.delete(0, tk.END)
-    device_entry.delete(0, tk.END)
-    serial_entry.delete(0, tk.END)
-    problem_entry.delete("1.0", tk.END)
+    # Heading label
+    heading = tk.Label(home, text="Welcome to G-TECH!", font=("Helvetica", 16, "bold"))
+    heading.pack(pady=5)
 
-# Function: Update ticket TreeView
-def update_ticket_list():
-    for row in ticket_tree.get_children():
-        ticket_tree.delete(row)
-    for t in tickets:
-        ticket_tree.insert('', 'end', values=(t['ID'], t['Name'], t['Device'], t['Status']))
+    # Description label
+    desc = tk.Label(home, text="Click below to submit or search a repair ticket.", font=("Helvetica", 12))
+    desc.pack(pady=5)
 
-# Function: Open the Search Window
-def open_search_window():
-    search_win = tk.Toplevel(root)
-    search_win.title("Search Ticket")
-    search_win.geometry("400x250")
+    # Button to go to form window
+    next_btn = tk.Button(home, text="Submit Repair Ticket", command=lambda: [home.destroy(), show_form_window()])
+    next_btn.pack(pady=10)
 
-    tk.Label(search_win, text="Enter Ticket ID or Name:").pack(pady=5)
-    search_entry = tk.Entry(search_win)
+    # Button to search for tickets
+    search_btn = tk.Button(home, text="Search Ticket", command=lambda: [home.destroy(), show_search_window()])
+    search_btn.pack(pady=10)
+
+    # Exit Button
+    exit_btn = tk.Button(home, text="Exit", command=home.destroy)
+    exit_btn.pack(pady=5)
+
+    home.mainloop()
+
+# ====== Module: Search Window ======
+def show_search_window():
+    search_window = tk.Tk()
+    search_window.title("Search Ticket")
+    search_window.geometry("400x200")
+
+    label = tk.Label(search_window, text="Enter Ticket ID or Name:")
+    label.pack(pady=5)
+
+    search_entry = tk.Entry(search_window)
     search_entry.pack(pady=5)
 
     def perform_search():
         term = search_entry.get().strip().lower()
-        results = [t for t in tickets if term == str(t['ID']).lower() or term in t['Name'].lower()]
+        results = [t for t in tickets if term == str(t.get('ID', '')).lower() or term in t.get('Name', '').lower()]
         if results:
             ticket = results[0]
-            msg = f"Ticket #{ticket['ID']} | Name: {ticket['Name']} | Device: {ticket['Device']} | Status: {ticket['Status']} | Description: {ticket['Problem']}"
+            msg = f"Ticket #{ticket['ID']} | Name: {ticket['Name']} | Device: {ticket['Device']} | Status: {ticket['Status']} | Description: {ticket['Description']}"
             messagebox.showinfo("Ticket Found", msg)
         else:
-            messagebox.showinfo("Not Found", "No matching ticket found.")
+            messagebox.showwarning("Not Found", "No matching ticket found.")
 
-    tk.Button(search_win, text="Search", command=perform_search).pack(pady=10)
+    search_btn = tk.Button(search_window, text="Search", command=perform_search)
+    search_btn.pack(pady=10)
 
-# ------------------ GUI Layout -------------------
-root = tk.Tk()
-root.title("G-TECH Repair Ticket System")
-root.geometry("1020x500")
+    exit_btn = tk.Button(search_window, text="Back", command=lambda: [search_window.destroy(), show_main_window()])
+    exit_btn.pack()
 
-# Labels
-tk.Label(root, text="Customer Name:").grid(row=0, column=0, sticky='e')
-tk.Label(root, text="Phone Number:").grid(row=1, column=0, sticky='e')
-tk.Label(root, text="Device Type:").grid(row=2, column=0, sticky='e')
-tk.Label(root, text="Serial Number:").grid(row=3, column=0, sticky='e')
-tk.Label(root, text="Problem Description:").grid(row=4, column=0, sticky='ne')
+# ====== Module: Form Window ======
+def show_form_window():
+    form = tk.Tk()
+    form.title("Repair Ticket Form")
+    form.geometry("500x350")
+    form.resizable(False, False)
 
-# Entry fields
-name_entry = tk.Entry(root)
-phone_entry = tk.Entry(root)
-device_entry = tk.Entry(root)
-serial_entry = tk.Entry(root)
-problem_entry = tk.Text(root, height=4, width=30)
+    # Labels
+    tk.Label(form, text="Customer Name:", font=("Helvetica", 12)).grid(row=0, column=0, pady=10, padx=10, sticky="e")
+    tk.Label(form, text="Device Type:", font=("Helvetica", 12)).grid(row=1, column=0, pady=10, padx=10, sticky="e")
+    tk.Label(form, text="Phone Number:", font=("Helvetica", 12)).grid(row=2, column=0, pady=10, padx=10, sticky="e")
+    tk.Label(form, text="Issue Description:", font=("Helvetica", 12)).grid(row=3, column=0, pady=10, padx=10, sticky="ne")
+    
 
-name_entry.grid(row=0, column=1)
-phone_entry.grid(row=1, column=1)
-device_entry.grid(row=2, column=1)
-serial_entry.grid(row=3, column=1)
-problem_entry.grid(row=4, column=1)
+    # Input Fields
+    name_var = tk.StringVar()
+    device_var = tk.StringVar()
+    phone_var = tk.StringVar()
+    issue_text = tk.Text(form, height=5, width=30)
 
-# Buttons
-tk.Button(root, text="Create Ticket", command=submit_ticket).grid(row=5, column=0, pady=10)
-tk.Button(root, text="Search Ticket", command=open_search_window).grid(row=5, column=1, pady=10)
-tk.Button(root, text="Exit", command=exit_app).grid(row=6, column=0, columnspan=2)
+    name_entry = tk.Entry(form, textvariable=name_var)
+    device_entry = tk.Entry(form, textvariable=device_var)
+    phone_entry = tk.Entry(form, textvariable=phone_var)
 
-# Ticket list
-ticket_tree = ttk.Treeview(root, columns=("ID", "Name", "Device", "Status", "Description"), show='headings')
-ticket_tree.heading("ID", text="ID")
-ticket_tree.heading("Name", text="Name")
-ticket_tree.heading("Device", text="Device")
-ticket_tree.heading("Status", text="Status")
-ticket_tree.heading("Description", text="Description")
-ticket_tree.grid(row=7, column=0, columnspan=2, pady=20)
+    name_entry.grid(row=0, column=1, pady=10)
+    device_entry.grid(row=1, column=1, pady=10)
+    phone_entry.grid(row=2, column=1, pady=10)
+    issue_text.grid(row=3, column=1, pady=10)
 
+    # Submit Callback Function
+    def submit_form():
+        name = name_var.get().strip()
+        device = device_var.get().strip()
+        phone = phone_var.get().strip()
+        issue = issue_text.get("1.0", "end").strip()
 
+        # Input validation
+        if not name or not device or not issue:
+            messagebox.showwarning("Input Error", "All fields are required.")
+            return
 
+        if not name.replace(" ", "").isalpha():
+            messagebox.showerror("Validation Error", "Name should only contain letters.")
+            return
 
+        # Simulate ticket submission
+        ticket_id = len(tickets) + 1
+        tickets.append({
+            "ID": ticket_id,
+            "Name": name,
+            "Device": device,
+            "Description": issue,
+            "Status": "Open"
+        })
 
-root.mainloop()
+        messagebox.showinfo("Success", f"Ticket #{ticket_id} submitted for {name}'s {device}.")
+        form.destroy()
+        show_main_window()
+
+    # Submit Button
+    submit_btn = tk.Button(form, text="Submit", command=submit_form)
+    submit_btn.grid(row=4, column=1, pady=20)
+
+    # Exit Button
+    exit_btn = tk.Button(form, text="Exit", command=form.destroy)
+    exit_btn.grid(row=5, column=1)
+
+    form.mainloop()
+
+# ====== Program Start ======
+if __name__ == "__main__":
+    show_main_window()
