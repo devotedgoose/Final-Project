@@ -12,7 +12,7 @@ Developed using Python's Tkinter library with a modular and secure approach.
 
 import tkinter as tk
 from tkinter import messagebox
-from PIL import Image, ImageTk
+from tkinter import PhotoImage
 
 
 # Storage for tickets
