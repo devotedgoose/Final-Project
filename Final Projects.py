@@ -19,6 +19,7 @@ from tkinter import PhotoImage
 tickets = []  # Initially empty
 
 # ====== Module: Main Window (Home) ======
+# This function sets up and displays the main window, including company branding and navigation to the form.
 def show_main_window():
     home = tk.Tk()
     home.title("G-TECH Repair Ticket Service")
@@ -62,6 +63,7 @@ def show_main_window():
     home.mainloop()
 
 # ====== Module: Search Window ======
+# This function sets up the search window where users can search for existing tickets.
 def show_search_window():
     search_window = tk.Tk()
     search_window.title("Search Ticket")
@@ -90,6 +92,7 @@ def show_search_window():
     exit_btn.pack()
 
 # ====== Module: Form Window ======
+# This function sets up the form window where users can input repair ticket info.
 def show_form_window():
     form = tk.Tk()
     form.title("Repair Ticket Form")
@@ -159,5 +162,6 @@ def show_form_window():
     form.mainloop()
 
 # ====== Program Start ======
+# Launch the main window when script runs
 if __name__ == "__main__":
     show_main_window()
