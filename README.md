@@ -29,7 +29,7 @@ A **Python-based ticket submission system** built with Tkinter GUI for managing 
 ---
 
 ## 📸 Screenshots
-![Main Window](screenshots/main_window.png)  
+![Main Window](Screenshot 2025-11-05 155929.png) 
 ![Ticket Form](screenshots/ticket_form.png)  
 
 *(Add your own screenshots in a `/screenshots` folder in the repo)*
